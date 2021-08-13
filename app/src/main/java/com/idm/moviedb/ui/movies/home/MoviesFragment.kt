@@ -34,7 +34,7 @@ class MoviesFragment : Fragment() {
 
 
         activity.apply {
-            moviesViewModel.getNowPlaying().observe(viewLifecycleOwner,{
+            moviesViewModel.getNowPlaying().observe(viewLifecycleOwner, {
                 when (it.status) {
                     Status.LOADING -> {
                     }
@@ -42,7 +42,7 @@ class MoviesFragment : Fragment() {
                         it.data?.let { item ->
                             nowPlayingAdapter = MoviePagedListAdapter()
                             nowPlayingAdapter.submitList(item)
-                            Log.d("MoviesFragment","Cek $item")
+                            Log.d("MoviesFragment", "Cek $item")
                             nowPlayingAdapter.notifyDataSetChanged()
                             binding.shimmerNowPlaying.stopShimmer()
                             binding.shimmerNowPlaying.visibility = View.GONE
@@ -51,12 +51,17 @@ class MoviesFragment : Fragment() {
                     }
                     Status.ERROR -> {
                         binding.shimmerNowPlaying.stopShimmer()
-                        Toast.makeText(requireContext(),"Error when Load a Data", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "Error when Load a Data",
+                            Toast.LENGTH_LONG
+                        ).show()
 
                     }
                 }
             })
-            binding.rvNp.layoutManager = LinearLayoutManager(activity,LinearLayoutManager.VERTICAL,false)
+            binding.rvNp.layoutManager =
+                LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
         }
     }
 
@@ -65,5 +70,5 @@ class MoviesFragment : Fragment() {
         super.onDestroy()
         _binding = null
     }
-    }
+}
 
