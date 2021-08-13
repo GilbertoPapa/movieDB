@@ -41,10 +41,8 @@ class FavoriteMoviesFragment : Fragment() {
 
     private fun setFavoriteList(items: PagedList<MovieEntity>) {
         if (items.isEmpty()) {
-            binding.movieNotfound.isVisible = true
             favoriteAdapter.submitList(items)
         } else {
-            binding.movieNotfound.isVisible = false
             favoriteAdapter.submitList(items)
         }
         binding.rvFavMovie.adapter = favoriteAdapter

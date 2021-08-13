@@ -16,6 +16,6 @@
         tools:layout="@layout/fragment_tv_show" />
     <fragment
         android:id="@+id/favorite"
-        android:name="com.idm.moviedb.ui.favorite.FavoriteFragment"
+        android:name="com.idm.moviedb.ui.favorite.movies.FavoriteMoviesFragment"
         android:label="FavoriteFragment" />
 </navigation>

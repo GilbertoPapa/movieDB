@@ -1,21 +1,16 @@
 package com.idm.moviedb.data.repositories
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.idm.moviedb.data.NetworkBoundResource
-import com.idm.moviedb.data.source.remote.response.movie.MovieResponse
-import com.idm.moviedb.data.source.remote.response.movie.detail.MovieDetailResponse
-import com.idm.moviedb.data.source.remote.response.tv.TvResponse
-import com.idm.moviedb.data.source.remote.response.tv.detail.TvDetailResponse
 import com.idm.moviedb.data.source.local.LocalDataSource
 import com.idm.moviedb.data.source.local.entity.MovieEntity
-import com.idm.moviedb.data.source.local.entity.TvEntity
 import com.idm.moviedb.data.source.remote.ApiResponse
 import com.idm.moviedb.data.source.remote.RemoteDataSource
+import com.idm.moviedb.data.source.remote.response.movie.MovieResponse
 import com.idm.moviedb.data.source.remote.response.movie.detail.Genres
-import com.idm.moviedb.data.source.remote.response.tv.detail.Genre
+import com.idm.moviedb.data.source.remote.response.movie.detail.MovieDetailResponse
 import com.idm.moviedb.utils.AppExecutors
 import com.idm.moviedb.vo.Resource
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +22,7 @@ class MainRepository @Inject constructor(
     private val remoteDataSource: RemoteDataSource,
     private val localDataSource: LocalDataSource,
     private val appExecutors: AppExecutors
-) : MovieTvDataSource {
+) : MovieDataSource {
 
     override fun getMovieList(): LiveData<Resource<PagedList<MovieEntity>>> {
         return object : NetworkBoundResource<PagedList<MovieEntity>, MovieResponse>() {
@@ -78,53 +73,6 @@ class MainRepository @Inject constructor(
         }.asLiveData()
     }
 
-    override fun getTvPopular(): LiveData<Resource<PagedList<TvEntity>>> {
-        return object : NetworkBoundResource<PagedList<TvEntity>, TvResponse>() {
-
-            val listTvItem = ArrayList<TvEntity>()
-            override fun loadFromDB(): LiveData<PagedList<TvEntity>> {
-                val config = PagedList.Config.Builder()
-                    .setInitialLoadSizeHint(10)
-                    .setPageSize(10)
-                    .build()
-                return LivePagedListBuilder(localDataSource.getTvList(), config).build()
-            }
-
-            override fun shouldFetch(data: PagedList<TvEntity>?): Boolean =
-                data == null || data.isEmpty()
-
-            public override fun createCall(): LiveData<ApiResponse<TvResponse>> =
-                remoteDataSource.getTvPopular()
-
-            override fun saveCallResult(data: TvResponse) {
-                for (item in data.results) {
-                    val tvitem = TvEntity(
-                       item.backdrop_path,
-                        genres = listOf(
-                            Genre(""),
-                        ),
-                        item.id,
-                        item.name,
-                        0,
-                        item.overview,
-                        item.poster_path,
-                        "",
-                        "",
-                        item.vote_average,
-                        item.first_air_date,
-                        false
-
-                    )
-
-
-                    listTvItem.add(tvitem)
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    localDataSource.insertTvList(listTvItem)
-                }
-            }
-        }.asLiveData()
-    }
 
     override fun getDetailMovie(movie_id: Int): LiveData<Resource<MovieEntity>> {
 
@@ -168,44 +116,6 @@ class MainRepository @Inject constructor(
         }.asLiveData()
     }
 
-    override fun getDetailTv(tv_id: Int): LiveData<Resource<TvEntity>> {
-        return object : NetworkBoundResource<TvEntity, TvDetailResponse>() {
-            val listTvItem = ArrayList<TvEntity>()
-            override fun loadFromDB(): LiveData<TvEntity> {
-                return localDataSource.getDetailTv(tv_id)
-            }
-
-            override fun shouldFetch(data: TvEntity?): Boolean =
-                data == null || data.status.isEmpty()
-
-            public override fun createCall(): LiveData<ApiResponse<TvDetailResponse>> =
-                remoteDataSource.getDetailTv(tv_id)
-
-            override fun saveCallResult(data: TvDetailResponse) {
-                val tvitem = TvEntity(
-                    data.backdrop_path,
-                    data.genres,
-                    data.id,
-                    data.name,
-                    data.number_of_episodes,
-                    data.overview,
-                    data.poster_path,
-                    data.status,
-                    data.tagline,
-                    data.vote_average,
-                    data.first_air_date,
-                    false
-                )
-               listTvItem.add(tvitem)
-               Log.d("GetDetailRepo","isi Tvitem $tvitem")
-                CoroutineScope(Dispatchers.IO).launch {
-                    localDataSource.insertTvList(listTvItem)
-                }
-
-            }
-        }.asLiveData()
-    }
-
     override fun updateMovie(movie: MovieEntity) {
         appExecutors.diskIO().execute { localDataSource.updateMovie(movie)}
     }
@@ -217,19 +127,6 @@ class MainRepository @Inject constructor(
             .setPageSize(5)
             .build()
         return LivePagedListBuilder(localDataSource.getAllFavoriteMovieItems(), config).build()
-    }
-
-    override  fun updateTv(tv: TvEntity) {
-        appExecutors.diskIO().execute { localDataSource.updateTv(tv)}
-    }
-
-    override fun getAllFavoriteTv(): LiveData<PagedList<TvEntity>> {
-        val config = PagedList.Config.Builder()
-            .setEnablePlaceholders(false)
-            .setInitialLoadSizeHint(5)
-            .setPageSize(5)
-            .build()
-        return LivePagedListBuilder(localDataSource.getAllFavoriteTVItems(), config).build()
     }
 }
 

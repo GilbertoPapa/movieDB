@@ -61,7 +61,6 @@ class DetailMovieActivity : AppCompatActivity(){
             finish()
         }
 
-
     }
 
 
